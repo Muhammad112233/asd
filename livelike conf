@@ -1,0 +1,326 @@
+Login as user
+
+Grant pgsdb user for installing packages from Yum. (SMG) 
+
+Create a folder in pgsdb home as postgresql-source-files.
+
+ALL the source files reside in postgresql-src.
+
+
+
+Presquites for installing postgresql from source:
+
+1: gcc compiler
+2: readline-devel
+3: zlib-devel
+4: python-devel
+
+first install postgresql-12.1.tar. Run the following commands
+
+untar it: tar -xvf postgresql-12.1.tar
+cd postgresql-12.1
+./configure --prefix=/pgs/postgresql --with-python 
+
+Now it throws error that "configure: error: no acceptable C compiler found in $PATH"
+
+solution:
+Install gcc compiler.
+Sudo yum install gcc
+
+
+Now run the configure command again:
+
+./configure --prefix=/pgs/postgresql --with-python 
+
+
+Now it will throw error:
+
+configure: error: readline library not found
+
+
+solution:
+sudo yum install readline*
+
+
+Now run the configure command again:
+
+./configure --prefix=/pgs/postgresql --with-python 
+
+Now it will throw error:
+
+configure: error: zlib library not found
+
+solution:
+sudo yum install zlib*
+
+Now run the configure command again:
+
+./configure --prefix=/pgs/postgresql --with-python
+
+Now it will throw error:
+
+configure: error: python.h  not found
+
+solution:
+sudo yum install python-devel
+
+Now run the configure command again:
+
+./configure --prefix=/pgs/postgresql --with-python
+
+make install
+
+
+Now go to contrib folder and run:
+
+make all
+make install
+
+leave the directory and run:
+
+cd src
+make all
+make install
+
+
+
+cd pl
+make all
+make install
+
+
+
+now create a folder in the given prefix path:
+
+mkdir /pgs/postgresql/data
+
+
+
+
+set .bashrc:
+
+nano ~/.bashrc
+export PATH=$PATH:/pgs/postgresql/bin
+
+
+
+Now initialize postgresql database:
+
+initdb -D /pgs/postgresql/data/
+ 
+
+Now run the following command to start postgresql server:
+
+
+ pg_ctl -D /pgs/postgresql/data/ start
+ 
+ 
+ It will start postgresql at port 5432. Now if you want to change the default port, run:
+ 
+ nano /pgs/postgresql/data/postgresql.conf
+ 
+ and change the port label to required port number.
+ 
+ 
+ Now restart postgresql:
+ 
+  pg_ctl -D /pgs/postgresql/data/ restart
+  
+  
+Now for access from command line, run:
+
+psql -U pgsdb -p 5400 -d postgres/or any database
+
+
+
+Now install the following required extensions from source:
+
+1: pgsmtp
+2: repmgr
+3: pgbackrest
+4: oracle_fdw
+5: orafce
+6: pl-debugger
+7: pg_audit
+8: pg_agent
+
+
+
+1: PG_SMTP
+
+cd pgsmtp-folder
+make 
+make install
+
+2: repmgr
+
+
+unzip repmgr-master.zip
+cd repmgr-master
+./configure
+make
+
+make will throw error like  "make: flex: Command not found"
+
+solution:
+
+sudo yum install flex
+
+
+now run:
+make
+make install
+
+3: ORAFCE
+
+ make 
+ make install
+ 
+ 
+4: pg_audit
+ 
+ make USE_PGXS=1
+ make install USE_PGXS=1
+ 
+ 
+5: pldebugger 
+
+ make USE_PGXS=1
+ make install USE_PGXS=1
+ 
+ 
+6: oracle_fdw
+
+First install oracle instant client 19.3 packages
+- Basic
+- devel
+- jdbc
+- sqlplus (make sure you've rpm access or contact with smg)
+
+Now run the following commands in oracle_fdw src folder
+
+make 
+make install
+
+
+7: pgagent
+
+presquites:
+- cmake > 3.3 (install from master and use --prefix option to set directory)
+- boost library (run "sudo yum install boost")
+- boost-devel  (run "sudo yum install boost-devel")
+
+
+first install gcc-c++ package from yum
+
+ccmake /path/to/pgagentfolder
+set the paths and press c to configure and press g to generate makefile
+now run
+make and make install
+
+
+8: ora2pg Installation
+
+Now install ora2pg(will be installed with privileges on folders):
+
+Install perl (sudo yum install perl)
+Install CPAN (sudo yum install perl-CPAN)
+Install DBD-Oracle from source
+perl Makefile.pl
+
+make 
+make install (There will be a dependency as it creates directory in /usr/local/share) 
+Install DBD-pg from source
+
+perl Makefile.pl
+make 
+make install (There will be a dependency as it creates directory in /usr/local/share) 
+
+ set the following environments:
+
+export LD_LIBRARY_PATH=/ora12c/oracle/app/product/12.2.0/db_2/lib
+export ORACLE_HOME=/ora12c/oracle/app/product/12.2.0/db_2
+
+
+
+Now go to ora2pg folder.
+
+perl Makefile.pl
+make 
+make install 
+
+now run ora2pg to check if it is installed correctly.
+
+set ora2pg conf according to the given needs.
+
+
+
+
+9: PGBACKREST:
+
+
+
+install pgbackrest 2.23 src
+go into src directory
+
+run 
+./configure --prefix=/backup
+
+it will throw error as
+
+configure: error: library 'pq' is required
+
+so run the following command.
+
+sudo yum install postgresql-libs
+
+
+Now arun configure and it will throw error as 
+
+it will throw error as
+
+configure: error: library 'crypto' is required
+
+
+so install
+
+sudo yum install openssl-devel
+
+
+Now it will throw error for 
+
+configure: error: library 'xml2' is required
+
+so install 
+
+sudo yum install libxml2-devel
+
+--------------------------------------------------------------------------------------------------------------------
+
+
+ORACLE TO POSTGRESQL DBLINK SETUP:
+
+
+Install rpm.rte package from smitty by making toc file (AIX Admiminstration needed)
+Install packages for yum using rpm.
+take internet access from NMG on the following ip address 
+
+=>   129.35.224.112 public.dhe.ibm.com
+
+put entry this IP Address into DNS names  (AIX Admiminstration needed)
+
+now run: 
+
+yum repolist( It will fetch all packages from above ip-address)
+
+now run:
+
+yum install gcc* (AIX Admiminstration needed)
+please check /opt folder size ( make it atleast 4GB)
+
+Now run: 
+
+Yum install postgresql*
+
+Yum install unixodbc
+
